@@ -14,9 +14,18 @@
 # Author:
 #   naichilab <naichilab@live.jp>
 
-module.exports = (robot) ->
-  robot.respond /hello/, (res) ->
-    res.reply "hello!"
+config =
+  message: process.env.HUBOT_HELLO_XXX_MESSAGE
+  messages: JSON.parse(process.env.HUBOT_HELLO_XXX_MESSAGES ? '[]')
 
-  robot.hear /orly/, (res) ->
-    res.send "yarly"
+module.exports = (robot) ->
+  unless config.message?
+    robot.logger.error 'process.env.HUBOT_HELLO_XXX_MESSAGE is not defined'
+    return
+
+  robot.respond /hello$/, (msg) ->
+    msg.send "#{config.message}, #{msg.envelope.user.name}!"
+
+  robot.respond /hello!$/, (msg) ->
+    message = msg.random config.messages
+    msg.send message if message?
